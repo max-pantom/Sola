@@ -9,17 +9,26 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@libsql/client": "^0.15.8",
+    "@planetscale/database": "^1.19.0",
     "@prisma/client": "^6.8.2",
+    "better-sqlite3": "^11.10.0",
+    "drizzle-orm": "^0.44.1",
     "next": "15.3.3",
+    "pg": "^8.16.0",
     "prisma": "^6.8.2",
     "react": "^19.0.0",
-    "react-dom": "^19.0.0"
+    "react-dom": "^19.0.0",
+    "sqlite3": "^5.1.7"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",
     "@types/node": "^20",
+    "@types/pg": "^8.15.4",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "@types/sqlite3": "^5.1.0",
+    "drizzle-kit": "^0.31.1",
     "tailwindcss": "^4",
     "typescript": "^5"
   }

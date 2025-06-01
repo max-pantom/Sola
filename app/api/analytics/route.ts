@@ -1,11 +1,8 @@
-import { prisma } from '@/lib/prisma';
+import pool from '@/lib/db';
 
 export async function GET() {
-  const all = await prisma.analytics.findMany({
-    orderBy: { timestamp: 'desc' },
-  });
-
-  return new Response(JSON.stringify(all), {
+  const result = await pool.query(`SELECT * FROM analytics ORDER BY timestamp DESC`);
+  return new Response(JSON.stringify(result.rows), {
     headers: { 'Content-Type': 'application/json' },
   });
 }
