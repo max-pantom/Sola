@@ -1,0 +1,20 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = "file:./dev.db"
+}
+
+model Analytics {
+  id        String   @id @default(cuid())
+  siteId    String
+  path      String
+  referrer  String
+  userAgent String
+  country   String?
+  ip        String?
+  clicks    Int      @default(0)
+  timestamp DateTime @default(now())
+}
