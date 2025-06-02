@@ -1,4 +1,5 @@
 import { getDeviceType } from "@/app/utils/getDeviceType";
+import { getBrowser } from "@/app/utils/parseUserAgent";
 import pool from "@/lib/db";
 
 
@@ -18,6 +19,7 @@ export async function POST(req: Request) {
   try {
     const body = await req.json();
     const ip = req.headers.get("x-forwarded-for") || "unknown";
+    const browser = getBrowser(body.userAgent);
 
     let country = null; // Initialize country variable
     try {
@@ -33,8 +35,8 @@ export async function POST(req: Request) {
     const device = getDeviceType(body.userAgent);
 
     await pool.query(
-      `INSERT INTO analytics (id, path, referrer, userAgent, ip, country, device, timestamp)
-       VALUES ($1, $2, $3, $4, $5, $6, $7, NOW())`,
+      `INSERT INTO analytics (id, path, referrer, userAgent, ip, country, device, browser, timestamp)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, NOW())`,
       [
         body.id,
         body.path,
@@ -42,7 +44,8 @@ export async function POST(req: Request) {
         body.userAgent,
         ip,
         country,
-        device
+        device,
+        browser
       ]
     );
 
