@@ -11,6 +11,7 @@ interface AnalyticsEntry {
   clicks?: number;
   ip?: string;
   country?: string;
+  device?: string;
 }
 
 export default function Dashboard() {
@@ -140,7 +141,8 @@ export default function Dashboard() {
             <p><strong>Referrer:</strong> {entry.referrer}</p>
             <p><strong>User Agent:</strong> {entry.userAgent}</p>
             <p><strong>IP:</strong> {entry.ip || 'N/A'}</p>
-            <p><strong>Country:</strong> {entry.country || 'N/A'}</p>
+            <p><strong>Device:</strong> {entry.device}</p>
+            <p><strong>Country:</strong> {entry.country}</p>
             <p><strong>Clicks:</strong> {entry.clicks ?? 0}</p>
             <p><strong>Time:</strong> {entry.timestamp}</p>
           </li>

@@ -1,4 +1,6 @@
+import { getDeviceType } from "@/app/utils/getDeviceType";
 import pool from "@/lib/db";
+
 
 export async function OPTIONS() {
   return new Response(null, {
@@ -11,21 +13,36 @@ export async function OPTIONS() {
   });
 }
 
+
 export async function POST(req: Request) {
   try {
     const body = await req.json();
     const ip = req.headers.get("x-forwarded-for") || "unknown";
 
+    let country = null; // Initialize country variable
+    try {
+      const geo = await fetch(`https://ipapi.co/${ip}/json/`);
+      if (geo.ok) {
+        const geoData = await geo.json();
+        country = geoData.country_name || null; // Set country based on geo data
+      }
+    } catch (err) {
+      console.error('Geo lookup failed:', err); // Log any errors during geo lookup
+    }
+
+    const device = getDeviceType(body.userAgent);
+
     await pool.query(
-      `INSERT INTO analytics (id, path, referrer, userAgent, ip, country)
-       VALUES ($1, $2, $3, $4, $5, $6)`,
+      `INSERT INTO analytics (id, path, referrer, userAgent, ip, country, device, timestamp)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, NOW())`,
       [
         body.id,
         body.path,
         body.referrer,
         body.userAgent,
         ip,
-        body.country || null,
+        country,
+        device
       ]
     );
 
@@ -45,3 +62,9 @@ export async function POST(req: Request) {
     });
   }
 }
+
+
+
+
+
+
