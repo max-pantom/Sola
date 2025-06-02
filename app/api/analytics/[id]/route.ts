@@ -1,13 +1,15 @@
-import { NextApiRequest, NextApiResponse } from 'next';
+import { NextRequest } from 'next/server';
 import pool from "@/lib/db";
 
-export async function GET(req: NextApiRequest, res: NextApiResponse) {
-  const { id } = req.query;
+export async function GET(req: NextRequest, { params }: { params: { id: string } }) {
+  const { id } = params;
 
   const result = await pool.query(
     `SELECT * FROM analytics WHERE id = $1 ORDER BY timestamp DESC`,
     [id]
   );
 
-  return res.status(200).json(result.rows);
+  return Response.json(result.rows);
 }
+
+
