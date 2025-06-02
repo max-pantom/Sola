@@ -1,16 +1,13 @@
 import { NextRequest } from 'next/server';
-import pool from "@/lib/db";
+import pool from '@/lib/db';
 
-// use a named function parameter for context
 export async function GET(
   req: NextRequest,
-  context: { params: Record<string, string> }
-) {
-  const id = context.params.id;
-
+  { params }: { params: { id: string } }
+): Promise<Response> {
   const result = await pool.query(
     `SELECT * FROM analytics WHERE id = $1 ORDER BY timestamp DESC`,
-    [id]
+    [params.id]
   );
 
   return Response.json(result.rows);
