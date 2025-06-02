@@ -1,102 +1,149 @@
+"use client";
+
 import Image from "next/image";
+import Link from "next/link";
+import { useState, useEffect } from "react";
+
+interface RecentSite {
+  id: string;
+  path: string;
+}
 
 export default function Home() {
-  return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="list-inside list-decimal text-sm/6 text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-[family-name:var(--font-geist-mono)] font-semibold">
-              app/page.tsx
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
-          </li>
-        </ol>
+  const [trackingId, setTrackingId] = useState("");
+  const [targetUrl, setTargetUrl] = useState("");
+  const [script, setScript] = useState("");
+  const [recentSites, setRecentSites] = useState<RecentSite[]>([]);
+  const [device, setDevice] = useState("Unknown");
+  const [country, setCountry] = useState("Unknown");
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
+  useEffect(() => {
+    const savedId = localStorage.getItem("sola-last-id");
+    if (savedId) setTrackingId(savedId);
+
+    // Fetch recent sites from local storage
+    const savedSites = JSON.parse(localStorage.getItem("sola-recent-sites") || "[]");
+    setRecentSites(savedSites);
+
+    // Determine device type
+    const userAgent = navigator.userAgent;
+    if (/mobile/i.test(userAgent)) {
+      setDevice("Mobile");
+    } else if (/tablet/i.test(userAgent)) {
+      setDevice("Tablet");
+    } else {
+      setDevice("Desktop");
+    }
+
+    // Fetch country based on IP
+    const fetchCountry = async () => {
+      try {
+        const response = await fetch("https://ipapi.co/json/");
+        const data = await response.json();
+        setCountry(data.country_name || "Unknown");
+      } catch (error) {
+        console.error("Error fetching country:", error);
+      }
+    };
+
+    fetchCountry();
+  }, []);
+
+  const generateScript = () => {
+    const newScript = `<script>window.SOLA_SITE_ID = "${trackingId}"</script>\n<script src="https://sola.vercel.app/sola.js" defer></script>`;
+    setScript(newScript);
+    localStorage.setItem("sola-last-id", trackingId);
+
+    // Update recent sites in local storage
+    const updatedSites = [...recentSites, { id: trackingId, path: targetUrl }];
+    setRecentSites(updatedSites);
+    localStorage.setItem("sola-recent-sites", JSON.stringify(updatedSites));
+  };
+
+  return (
+    <div className="min-h-screen bg-white dark:bg-zinc-900 text-zinc-900 dark:text-white px-6 py-10 flex flex-col items-center gap-16 font-[var(--font-geist-sans)]">
+      <main className="w-full max-w-xl flex flex-col gap-2">
+        <section className="text-center border border-zinc-200 dark:border-zinc-700 p-8 rounded-3xl shadow-sm hover:shadow-md transition-shadow">
+          <h1 className="text-4xl font-bold mb-2 font-[var(--font-instrument-serif)]">Sola Analytics</h1>
+          <p className="text-zinc-600 dark:text-zinc-400 text-base">Track visits, clicks, and devices with a single embed.</p>
+          <Link href="/dashboard">
+            <button className="bg-blue-500 text-white px-6 py-2 rounded-full shadow-lg hover:bg-blue-400 transition mt-4">
+              Go to Dashboard
+            </button>
+          </Link>
+        </section>
+
+        <section className="border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-950 p-5 rounded-3xl shadow hover:shadow-lg transition-shadow space-y-4">
+          <h2 className="text-xl font-semibold">Quick Setup</h2>
+          <input
+            type="text"
+            placeholder="Tracking ID"
+            value={trackingId}
+            onChange={(e) => setTrackingId(e.target.value)}
+            className="w-full p-3 rounded-2xl border border-zinc-300 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-900 focus:outline-none focus:ring-2 focus:ring-blue-500"
+          />
+          <input
+            type="text"
+            placeholder="Target URL"
+            value={targetUrl}
+            onChange={(e) => setTargetUrl(e.target.value)}
+            className="w-full p-3 rounded-2xl border border-zinc-300 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-900 focus:outline-none focus:ring-2 focus:ring-blue-500"
+          />
+          <button
+            onClick={generateScript}
+            className="w-full bg-black dark:bg-white dark:text-black text-white py-3 rounded-2xl font-semibold hover:opacity-90 transition"
           >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
-        </div>
+            Generate Script
+          </button>
+          {script && (
+            <div className="bg-zinc-100 dark:bg-zinc-800 p-4 rounded-2xl mt-2">
+              <h3 className="font-medium text-sm mb-2">Embed Code</h3>
+              <pre className="text-xs font-mono whitespace-pre-wrap text-zinc-800 dark:text-zinc-100">{script}</pre>
+              <button
+                onClick={() => navigator.clipboard.writeText(script)}
+                className="mt-2 bg-zinc-800 dark:bg-white dark:text-black text-white px-4 py-2 rounded-2xl text-sm hover:opacity-90"
+              >
+                Copy Script
+              </button>
+            </div>
+          )}
+        </section>
+
+        <section className="border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-950 p-5 rounded-3xl shadow hover:shadow-lg transition-shadow space-y-2">
+          <h2 className="text-xl font-semibold mb-1">Live Preview</h2>
+          <div className="flex justify-between text-sm">
+            <span>Page Path</span>
+            <span>{targetUrl || "Not set"}</span>
+          </div>
+          <div className="flex justify-between text-sm">
+            <span>Status</span>
+            <span className="text-green-600">🟢 Active</span>
+          </div>
+          <div className="flex justify-between text-sm">
+            <span>Device</span>
+            <span>{device}</span>
+          </div>
+          <div className="flex justify-between text-sm">
+            <span>Country</span>
+            <span>{country}</span>
+          </div>
+        </section>
+
+        <section className="border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-950 p-5 rounded-3xl shadow hover:shadow-lg transition-shadow">
+          <h2 className="text-xl font-semibold mb-3">Recent Sites</h2>
+          <ul className="space-y-2">
+            {recentSites.map((site) => (
+              <li key={site.id} className="flex justify-between text-sm items-center">
+                <span>{site.id}</span>
+                <button className="text-blue-600 hover:underline">View Analytics</button>
+              </li>
+            ))}
+          </ul>
+        </section>
       </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
+
+      <footer className="text-xs text-zinc-500 dark:text-zinc-400 mt-12">
+        Built with ❤️ by Max — Powered by Vercel & Neon
       </footer>
     </div>
   );

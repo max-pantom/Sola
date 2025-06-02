@@ -1,16 +1,19 @@
-import { NextRequest } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import pool from '@/lib/db';
 
-export async function GET(
-  req: NextRequest,
-  context: any // fallback if type inference fails
-): Promise<Response> {
-  const id = context.params.id;
+export async function GET(req: NextRequest, { params }: { params: { id: string } }) {
+  // Await the params to access the id
+  const { id } = await params;
 
-  const result = await pool.query(
-    `SELECT * FROM analytics WHERE id = $1 ORDER BY timestamp DESC`,
-    [id]
-  );
+  try {
+    const result = await pool.query(
+      `SELECT * FROM analytics WHERE id = $1 ORDER BY timestamp DESC`,
+      [id]
+    );
 
-  return Response.json(result.rows);
+    return NextResponse.json(result.rows);
+  } catch (error) {
+    console.error("Error in /api/analytics/[id]:", error);
+    return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
+  }
 }
